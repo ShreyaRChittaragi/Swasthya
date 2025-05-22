@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Disease Specialists</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c7be5;
+            --primary-dark: #1a68d1;
+            --secondary: #e63946;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-color: #212529;
+            --white: #ffffff;
+            --transition: all 0.3s ease;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 6px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-gray);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            padding: 15px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo-text span {
+            color: var(--secondary);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--secondary);
+        }
+
+        /* Doctor Cards */
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .doctor-card {
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .doctor-image {
+            height: 200px;
+            background-color: var(--medium-gray);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .doctor-details {
+            padding: 20px;
+        }
+
+        .doctor-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .doctor-specialty {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .doctor-info {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .doctor-info i {
+            color: var(--primary);
+            width: 20px;
+            text-align: center;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .stars {
+            color: #ffc107;
+            margin-right: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background-color: #c1121f;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .location-info {
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .location-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .location-details {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            background-color: var(--primary-dark);
+            color: var(--white);
+            padding: 20px 0;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-top: 40px;
+        }
+
+        /* Form Styles */
+        .search-form {
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 123, 229, 0.2);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .disease-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .disease-option {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .disease-option input {
+            display: none;
+        }
+
+        .disease-option label {
+            display: block;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid var(--medium-gray);
+        }
+
+        .disease-option input:checked + label {
+            background-color: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .doctor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-text">Health<span>Connect</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <section>
+            <h2 class="section-title">Find Disease Specialists</h2>
+
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="diseaseType">Select Disease Type</label>
+                    <div class="disease-options">
+                        <div class="disease-option">
+                            <input type="radio" id="cardiovascular" name="diseaseType" value="cardiovascular" checked>
+                            <label for="cardiovascular">Cardiovascular</label>
+                        </div>
+                        <div class="disease-option">
+                            <input type="radio" id="cancer" name="diseaseType" value="cancer">
+                            <label for="cancer">Cancer</label>
+                        </div>
+                        <div class="disease-option">
+                            <input type="radio" id="diabetes" name="diseaseType" value="diabetes">
+                            <label for="diabetes">Diabetes</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <select id="state" class="form-control" required>
+                            <option value="">Select State</option>
+                            <option value="Karnataka" selected>Karnataka</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="district">District</label>
+                        <select id="district" class="form-control" required>
+                            <option value="">Select District</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Mysore">Mysore</option>
+                            <option value="Hubli">Hubli</option>
+                            <option value="Mangalore">Mangalore</option>
+                            <option value="Belgaum">Belgaum</option>
+                            <option value="Gulbarga">Gulbarga</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pincode">Pincode</label>
+                    <input type="text" id="pincode" class="form-control" placeholder="Enter your pincode" pattern="[0-9]{6}" title="6-digit pincode">
+                </div>
+
+                <button class="btn btn-primary" id="searchBtn">Find Specialists</button>
+            </div>
+
+            <div class="location-info" id="locationInfo" style="display: none;">
+                <div class="location-title">Showing doctors for <span id="diseaseTitle"></span> near:</div>
+                <div class="location-details" id="locationDetails"></div>
+            </div>
+
+            <div class="loading" id="loadingIndicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Finding the best specialists in your area...</p>
+            </div>
+
+            <div class="doctor-grid" id="doctorGrid"></div>
+
+            <div id="noDoctorsMessage" style="display: none; text-align: center; padding: 30px;">
+                <h3>No specialists found in your immediate area</h3>
+                <p>We couldn't find specialists for your condition in your district. Try expanding your search to nearby districts or consult with your local healthcare provider for referrals.</p>
+                <button class="btn btn-primary" id="expandSearchBtn">Search Nearby Districts</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 HealthConnect | Specialist Finder Service</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Karnataka districts with pincodes
+            const karnatakaDistricts = {
+                'Bangalore': {
+                    pincodes: ['560001', '560002', '560003', '560004', '560005'],
+                    areas: ['Central Bangalore', 'North Bangalore', 'South Bangalore', 'East Bangalore', 'West Bangalore']
+                },
+                'Mysore': {
+                    pincodes: ['570001', '570002', '570003', '570004', '570005'],
+                    areas: ['Central Mysore', 'North Mysore', 'South Mysore', 'East Mysore', 'West Mysore']
+                },
+                'Hubli': {
+                    pincodes: ['580001', '580002', '580003', '580004', '580005'],
+                    areas: ['Central Hubli', 'North Hubli', 'South Hubli', 'East Hubli', 'West Hubli']
+                },
+                'Mangalore': {
+                    pincodes: ['575001', '575002', '575003', '575004', '575005'],
+                    areas: ['Central Mangalore', 'North Mangalore', 'South Mangalore', 'East Mangalore', 'West Mangalore']
+                },
+                'Belgaum': {
+                    pincodes: ['590001', '590002', '590003', '590004', '590005'],
+                    areas: ['Central Belgaum', 'North Belgaum', 'South Belgaum', 'East Belgaum', 'West Belgaum']
+                },
+                'Gulbarga': {
+                    pincodes: ['585101', '585102', '585103', '585104', '585105'],
+                    areas: ['Central Gulbarga', 'North Gulbarga', 'South Gulbarga', 'East Gulbarga', 'West Gulbarga']
+                }
+            };
+
+            // Update pincode placeholder based on district selection
+            document.getElementById('district').addEventListener('change', function() {
+                const district = this.value;
+                const pincodeInput = document.getElementById('pincode');
+                
+                if (district && karnatakaDistricts[district]) {
+                    pincodeInput.placeholder = `e.g. ${karnatakaDistricts[district].pincodes[0]}`;
+                } else {
+                    pincodeInput.placeholder = 'Enter your pincode';
+                }
+            });
+
+            // Search button handler
+            document.getElementById('searchBtn').addEventListener('click', function () {
+                const state = document.getElementById('state').value.trim();
+                const district = document.getElementById('district').value.trim();
+                const pincode = document.getElementById('pincode').value.trim();
+                const diseaseType = document.querySelector('input[name="diseaseType"]:checked').value;
+
+                if (!state || !district) {
+                    alert('Please select both state and district');
+                    return;
+                }
+
+                // Show loading and location info
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('locationInfo').style.display = 'block';
+                document.getElementById('doctorGrid').innerHTML = '';
+                document.getElementById('noDoctorsMessage').style.display = 'none';
+
+                // Set location details
+                let locationText = district + ', ' + state;
+                if (pincode) locationText += ` (Pincode: ${pincode})`;
+                document.getElementById('locationDetails').textContent = locationText;
+
+                // Set disease title
+                const diseaseTitles = {
+                    'cardiovascular': 'Cardiovascular Disease',
+                    'cancer': 'Cancer',
+                    'diabetes': 'Diabetes'
+                };
+                document.getElementById('diseaseTitle').textContent = diseaseTitles[diseaseType];
+
+                // Simulate API call to get doctors
+                setTimeout(() => {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+
+                    // Get doctors based on disease type and location
+                    const doctors = getDoctorsByLocationAndDisease(district, state, diseaseType);
+
+                    if (doctors.length > 0) {
+                        // Show only the first doctor initially
+                        displayDoctors([doctors[0]]);
+                    } else {
+                        document.getElementById('noDoctorsMessage').style.display = 'block';
+                    }
+                }, 1500);
+            });
+
+            // Expand search button handler
+            document.getElementById('expandSearchBtn').addEventListener('click', function () {
+                const state = document.getElementById('state').value.trim();
+                const district = document.getElementById('district').value.trim();
+                const diseaseType = document.querySelector('input[name="diseaseType"]:checked').value;
+
+                document.getElementById('noDoctorsMessage').style.display = 'none';
+                document.getElementById('loadingIndicator').style.display = 'block';
+
+                // Simulate expanded search
+                setTimeout(() => {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    const expandedDoctors = getNearbyDoctors(district, state, diseaseType);
+                    displayDoctors(expandedDoctors);
+
+                    // Update location info
+                    document.getElementById('locationDetails').textContent =
+                        `Near ${district}, ${state} (expanded search)`;
+                }, 1500);
+            });
+
+            // Function to display doctors
+            function displayDoctors(doctors) {
+                const doctorGrid = document.getElementById('doctorGrid');
+                doctorGrid.innerHTML = '';
+
+                doctors.forEach(doctor => {
+                    const card = document.createElement('div');
+                    card.className = 'doctor-card';
+                    card.innerHTML = `
+                        <div class="doctor-details">
+                            <h3 class="doctor-name">${doctor.name}</h3>
+                            <p class="doctor-specialty">${doctor.specialty}</p>
+                            <p class="doctor-info"><i class="fas fa-hospital"></i> ${doctor.hospital}</p>
+                            <p class="doctor-info"><i class="fas fa-map-marker-alt"></i> ${doctor.location}</p>
+                            <p class="doctor-info"><i class="fas fa-phone"></i> ${doctor.phone}</p>
+                            <div class="rating">
+                                <div class="stars">
+                                    ${'<i class="fas fa-star"></i>'.repeat(Math.floor(doctor.rating))}
+                                    ${doctor.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
+                                    ${'<i class="far fa-star"></i>'.repeat(5 - Math.ceil(doctor.rating))}
+                                </div>
+                                <span>${doctor.rating} (${doctor.reviews} reviews)</span>
+                            </div>
+                            <button class="btn btn-primary">Book Appointment</button>
+                        </div>
+                    `;
+                    doctorGrid.appendChild(card);
+                });
+            }
+
+            // Sample data functions
+            function getDoctorsByLocationAndDisease(district, state, diseaseType) {
+                // This is a mock database - in reality you would query a real database
+                const doctorDatabase = {
+                    'cardiovascular': {
+                        "Bangalore": [
+                            {
+                                name: "Dr. Arjun Reddy",
+                                specialty: "Cardiologist",
+                                hospital: "Bangalore Heart Institute",
+                                location: "HSR Layout, Bangalore",
+                                phone: "+91 9876543210",
+                                rating: 4.8,
+                                reviews: 124,
+                            }
+                        ],
+                        "Mysore": [
+                            {
+                                name: "Dr. Vikram Joshi",
+                                specialty: "Cardiologist",
+                                hospital: "Mysore Medical Center",
+                                location: "Vijaynagar, Mysore",
+                                phone: "+91 8765432109",
+                                rating: 4.5,
+                                reviews: 89,
+                            }
+                        ],
+                        "Hubli": [
+                            {
+                                name: "Dr. Sunita Patil",
+                                specialty: "Cardiac Surgeon",
+                                hospital: "Hubli Cardiac Care",
+                                location: "Gokul Road, Hubli",
+                                phone: "+91 7654321098",
+                                rating: 4.6,
+                                reviews: 76,
+                            }
+                        ],
+                        "Mangalore": [
+                            {
+                                name: "Dr. Rajesh Shetty",
+                                specialty: "Interventional Cardiologist",
+                                hospital: "Mangalore Heart Foundation",
+                                location: "Hampankatta, Mangalore",
+                                phone: "+91 6543210987",
+                                rating: 4.7,
+                                reviews: 112,
+                            }
+                        ],
+                        "Belgaum": [
+                            {
+                                name: "Dr. Anjali Deshpande",
+                                specialty: "Cardiologist",
+                                hospital: "Belgaum Medical Center",
+                                location: "Camp, Belgaum",
+                                phone: "+91 9432109876",
+                                rating: 4.4,
+                                reviews: 65,
+                            }
+                        ],
+                        "Gulbarga": [
+                            {
+                                name: "Dr. Prakash Kumar",
+                                specialty: "Cardiologist",
+                                hospital: "Gulbarga Heart Care",
+                                location: "Super Market, Gulbarga",
+                                phone: "+91 8321098765",
+                                rating: 4.3,
+                                reviews: 58,
+                            }
+                        ],
+                        "Delhi": [
+                            {
+                                name: "Dr. Sanjay Gupta",
+                                specialty: "Interventional Cardiologist",
+                                hospital: "AIIMS Delhi",
+                                location: "Ansari Nagar, Delhi",
+                                phone: "+91 6543210987",
+                                rating: 4.7,
+                                reviews: 156,
+                            }
+                        ],
+                        "Maharashtra": [
+                            {
+                                name: "Dr. Rajesh Khanna",
+                                specialty: "Cardiac Electrophysiologist",
+                                hospital: "Kokilaben Hospital",
+                                location: "Andheri, Mumbai",
+                                phone: "+91 8321098765",
+                                rating: 4.6,
+                                reviews: 78,
+                            }
+                        ]
+                    },
+                    'cancer': {
+                        "Bangalore": [
+                            {
+                                name: "Dr. Priya Sharma",
+                                specialty: "Oncologist (Cancer Specialist)",
+                                hospital: "Bangalore Cancer Institute",
+                                location: "HSR Layout, Bangalore",
+                                phone: "+91 9876543210",
+                                rating: 4.9,
+                                reviews: 124,
+                            }
+                        ],
+                        "Mysore": [
+                            {
+                                name: "Dr. Ananya Rao",
+                                specialty: "Oncologist",
+                                hospital: "Mysore Cancer Center",
+                                location: "Vijaynagar, Mysore",
+                                phone: "+91 8765432109",
+                                rating: 4.7,
+                                reviews: 89,
+                            }
+                        ],
+                        "Hubli": [
+                            {
+                                name: "Dr. Ramesh Patil",
+                                specialty: "Surgical Oncologist",
+                                hospital: "Hubli Oncology Center",
+                                location: "Gokul Road, Hubli",
+                                phone: "+91 7654321098",
+                                rating: 4.5,
+                                reviews: 76,
+                            }
+                        ],
+                        "Mangalore": [
+                            {
+                                name: "Dr. Nandini Shetty",
+                                specialty: "Radiation Oncologist",
+                                hospital: "Mangalore Cancer Hospital",
+                                location: "Hampankatta, Mangalore",
+                                phone: "+91 6543210987",
+                                rating: 4.8,
+                                reviews: 112,
+                            }
+                        ],
+                        "Delhi": [
+                            {
+                                name: "Dr. Sanjay Gupta",
+                                specialty: "Oncologist",
+                                hospital: "AIIMS Delhi",
+                                location: "Ansari Nagar, Delhi",
+                                phone: "+91 6543210987",
+                                rating: 4.8,
+                                reviews: 156,
+                            }
+                        ]
+                    },
+                    'diabetes': {
+                        "Bangalore": [
+                            {
+                                name: "Dr. Ananya Rao",
+                                specialty: "Endocrinologist (Diabetes Specialist)",
+                                hospital: "Bangalore Diabetes Center",
+                                location: "Koramangala, Bangalore",
+                                phone: "+91 9876543210",
+                                rating: 4.7,
+                                reviews: 95,
+                            }
+                        ],
+                        "Mysore": [
+                            {
+                                name: "Dr. Vikram Joshi",
+                                specialty: "Diabetologist",
+                                hospital: "Mysore Diabetes Care",
+                                location: "Vijaynagar, Mysore",
+                                phone: "+91 8765432109",
+                                rating: 4.6,
+                                reviews: 78,
+                            }
+                        ],
+                        "Hubli": [
+                            {
+                                name: "Dr. Sunita Patil",
+                                specialty: "Endocrinologist",
+                                hospital: "Hubli Diabetes Center",
+                                location: "Gokul Road, Hubli",
+                                phone: "+91 7654321098",
+                                rating: 4.5,
+                                reviews: 65,
+                            }
+                        ],
+                        "Delhi": [
+                            {
+                                name: "Dr. Amit Sharma",
+                                specialty: "Endocrinologist",
+                                hospital: "Fortis Hospital",
+                                location: "Vasant Kunj, Delhi",
+                                phone: "+91 6543210987",
+                                rating: 4.8,
+                                reviews: 112,
+                            }
+                        ]
+                    }
+                };
+
+                // Return first doctor for the district and disease type if found, or empty array
+                return doctorDatabase[diseaseType]?.[district] || [];
+            }
+
+            function getNearbyDoctors(district, state, diseaseType) {
+                // This would normally query a larger radius
+                // For demo, we'll return some nearby doctors
+                const specialties = {
+                    'cardiovascular': 'Cardiologist',
+                    'cancer': 'Oncologist',
+                    'diabetes': 'Endocrinologist'
+                };
+                
+                return [
+                    {
+                        name: `Dr. ${diseaseType === 'cardiovascular' ? 'Vikram Singh' : diseaseType === 'cancer' ? 'Priya Reddy' : 'Amit Patel'}`,
+                        specialty: specialties[diseaseType],
+                        hospital: `${diseaseType === 'cardiovascular' ? 'City Heart Center' : diseaseType === 'cancer' ? 'Regional Cancer Institute' : 'Diabetes Care Center'}`,
+                        location: `Near ${district}`,
+                        phone: "+91 8321098765",
+                        rating: 4.3,
+                        reviews: 67,
+                    }
+                ];
+            }
+        });
+
+        // Save functionality
+        window.addEventListener('DOMContentLoaded', function() {
+            const { jsPDF } = window.jspdf;
+            
+            // Get all data from form
+            function getFormData() {
+                return {
+                    district: document.getElementById('district').value || 'Unknown District',
+                    state: document.getElementById('state').value || 'Unknown State',
+                    pincode: document.getElementById('pincode').value || 'Unknown Pincode',
+                    diseaseType: document.querySelector('input[name="diseaseType"]:checked').value
+                };
+            }
+
+            // Get doctor data
+            function getDoctorData() {
+                const doctorData = [];
+                document.querySelectorAll('.doctor-card').forEach(card => {
+                    doctorData.push({
+                        name: card.querySelector('.doctor-name').textContent,
+                        specialty: card.querySelector('.doctor-specialty').textContent,
+                        hospital: card.querySelector('.doctor-info:nth-of-type(1)').textContent.replace('🏥 ', ''),
+                        location: card.querySelector('.doctor-info:nth-of-type(2)').textContent.replace('📍 ', ''),
+                        phone: card.querySelector('.doctor-info:nth-of-type(3)').textContent.replace('📞 ', ''),
+                        rating: card.querySelector('.rating span').textContent
+                    });
+                });
+                return doctorData;
+            }
+
+            // Generate assessment content
+            function generateAssessmentContent() {
+                const formData = getFormData();
+                const doctorData = getDoctorData();
+                const diseaseTitles = {
+                    'cardiovascular': 'Cardiovascular Disease',
+                    'cancer': 'Cancer',
+                    'diabetes': 'Diabetes'
+                };
+                
+                let content = `SPECIALIST SEARCH REPORT\n`;
+                content += `Generated on: ${new Date().toLocaleString()}\n\n`;
+                
+                content += `=== PATIENT INFORMATION ===\n`;
+                content += `Location: ${formData.district}, ${formData.state}\n`;
+                content += `Pincode: ${formData.pincode}\n`;
+                content += `Condition: ${diseaseTitles[formData.diseaseType]}\n\n`;
+                
+                content += `=== RECOMMENDED SPECIALISTS ===\n`;
+                doctorData.forEach((doctor, index) => {
+                    content += `\nDOCTOR #${index + 1}\n`;
+                    content += `Name: ${doctor.name}\n`;
+                    content += `Specialty: ${doctor.specialty}\n`;
+                    content += `Hospital: ${doctor.hospital}\n`;
+                    content += `Location: ${doctor.location}\n`;
+                    content += `Contact: ${doctor.phone}\n`;
+                    content += `Rating: ${doctor.rating}\n`;
+                });
+                
+                content += `\n=== NEXT STEPS ===\n`;
+                content += `1. Contact one of the recommended specialists\n`;
+                content += `2. Schedule a consultation appointment\n`;
+                content += `3. Follow up with your primary care provider\n\n`;
+                
+                content += `=== DISCLAIMER ===\n`;
+                content += `This report is generated automatically and should not replace professional medical advice.`;
+                
+                return content;
+            }
+        });
+    </script>
+</body>
+</html>
